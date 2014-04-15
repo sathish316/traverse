@@ -7,9 +7,13 @@ module Traverse
     def get(collection)
       result = []
       collection.each do |record|
-        temp = nil
-        @path.path.each do |key|
-          temp = (record || temp)[key]
+        temp = record
+        unless @path.ignore_nil && record.nil?
+          @path.path.each do |key|
+            unless @path.ignore_nil_for(key) && temp[key].nil?
+              temp = temp[key]
+            end
+          end
         end
         result << temp
       end

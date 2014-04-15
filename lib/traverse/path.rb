@@ -1,15 +1,25 @@
 module Traverse
   class Path
     attr_reader :path
-    attr_reader :ignore_nulls
+    attr_reader :ignore_nil
+
+    def initialize
+      @path = []
+      @ignore_nil = false
+      @allow_nil_paths = []
+    end
 
     def just
-      self.ignore_nulls = true
+      if last_path
+        @allow_nil_paths << last_path
+      else
+        # beginning of traversal
+        @ignore_nil = true
+      end
       self
     end
 
     def method_missing(method_name, *args, &block)
-      @path ||= []
       @path << method_name
       self
     end
@@ -20,6 +30,16 @@ module Traverse
 
     def set(collection, value)
       Traverse::ArrayTraverser.new(self).set(collection, value)
+    end
+
+    def ignore_nil_for(key)
+      @allow_nil_paths.include?(key)
+    end
+
+    private
+
+    def last_path
+      @path[-1]
     end
   end
 end
